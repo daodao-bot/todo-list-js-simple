@@ -1,0 +1,32 @@
+name: Action
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      TZ: Asia/Shanghai
+      DOCKER_HUB_NAMESPACE: daodaobot
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      APPLICATION: todo-list-js-simple
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag $APPLICATION:latest
+
+      - name: Login Docker Hub
+        run: docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+
+      - name: Tag the Docker image
+        run: docker tag $APPLICATION:latest $DOCKER_HUB_NAMESPACE/$APPLICATION:latest
+
+      - name: Push the Docker Image
+        run: docker push $DOCKER_HUB_NAMESPACE/$APPLICATION:latest
